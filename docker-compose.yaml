@@ -16,7 +16,7 @@ services:
     networks:
       - internal
 
-  monolith:
+  dendrite:
     hostname: monolith
     image: matrixdotorg/dendrite-monolith:v0.8.4
     ports:
