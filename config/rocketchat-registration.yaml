@@ -1,0 +1,15 @@
+id: rocketchat_irjui67CJxQ6kQoSD
+hs_token: <replace-from-rocketchat-admin-screen>
+as_token: <replace-from-rocketchat-admin-screen>
+url: 'http://rocketchat:3300'
+sender_localpart: rocket.cat
+namespaces:
+  users:
+    - exclusive: false
+      regex: .*
+  rooms:
+    - exclusive: false
+      regex: .*
+  aliases:
+    - exclusive: false
+      regex: .*

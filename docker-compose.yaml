@@ -1,0 +1,101 @@
+version: "3.8"
+services:
+  postgres:
+    hostname: postgres
+    image: postgres:14
+    volumes:
+      - ./postgres/create_db.sh:/docker-entrypoint-initdb.d/20-create_db.sh
+    environment:
+      POSTGRES_PASSWORD: itsasecret
+      POSTGRES_USER: dendrite
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dendrite"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  monolith:
+    hostname: monolith
+    image: matrixdotorg/dendrite-monolith:v0.8.4
+    ports:
+      - 8008:8008
+      - 8448:8448
+    volumes:
+      - ./config:/etc/dendrite
+      - ./media:/var/dendrite/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  rocketchat:
+    image: registry.rocket.chat/rocketchat/rocket.chat:4.7.3
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          node main.js &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    restart: unless-stopped
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - internal
+
+    environment:
+      - PORT=3000
+      - ROOT_URL=https://chat.geekgone.dev
+      - MONGO_URL=mongodb://mongo:27017/rocketchat
+      - MONGO_OPLOG_URL=mongodb://mongo:27017/local
+      - REG_TOKEN=${REG_TOKEN}
+    depends_on:
+      - mongo
+    ports:
+      - 3000:3000
+    labels:
+      - "traefik.backend=rocketchat"
+      - "traefik.frontend.rule=Host: your.domain.tld"
+
+  mongo:
+    image: mongo:4.0
+    restart: unless-stopped
+    volumes:
+     - ./data/db:/data/db
+     #- ./data/dump:/dump
+    networks:
+     - internal
+    command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
+    labels:
+      - "traefik.enable=false"
+
+  # this container's job is just run the command to initialize the replica set.
+  # it will run the command and remove himself (it will not stay running)
+  mongo-init-replica:
+    image: mongo:4.0
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          mongo mongo/rocketchat --eval \"
+            rs.initiate({
+              _id: 'rs0',
+              members: [ { _id: 0, host: 'localhost:27017' } ]})\" &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    networks:
+      - internal
+    depends_on:
+      - mongo
+
+
+networks:
+  internal:
+    attachable: true

@@ -1,0 +1,88 @@
+server {
+    listen 80 ;
+    listen [::]:80 ;
+
+    if ($host = geekgone.dev) {
+        return 301 https://$host$request_uri;
+    } 
+
+
+    if ($host = chat.geekgone.dev) {
+        return 301 https://$host$request_uri;
+    } 
+    
+    if ($host = matrix.geekgone.dev) {
+        return 301 https://$host$request_uri;
+    } 
+        
+    server_name matrix.geekgone.dev chat.geekgone.dev geekgone.dev;
+    return 404; 
+}
+
+server {
+    listen 443; 
+    ssl_certificate /etc/letsencrypt/live/geekgone.dev/fullchain.pem; 
+    ssl_certificate_key /etc/letsencrypt/live/geekgone.dev/privkey.pem; 
+    include /etc/letsencrypt/options-ssl-nginx.conf; 
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; 
+
+    root /var/www/html;
+
+    server_name geekgone.dev; 
+
+    location .well-known/matrix/ {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass http://localhost:8008;
+        proxy_read_timeout 90;
+    }
+
+}
+
+server {
+
+    listen 443; 
+    ssl_certificate /etc/letsencrypt/live/geekgone.dev/fullchain.pem; 
+    ssl_certificate_key /etc/letsencrypt/live/geekgone.dev/privkey.pem; 
+    include /etc/letsencrypt/options-ssl-nginx.conf; 
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; 
+
+    root /var/www/html;
+
+    server_name chat.geekgone.dev; 
+
+    location / {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass http://localhost:3000;
+        proxy_read_timeout 90;
+    }
+
+}
+
+server {
+
+    listen 443; 
+    ssl_certificate /etc/letsencrypt/live/geekgone.dev/fullchain.pem; 
+    ssl_certificate_key /etc/letsencrypt/live/geekgone.dev/privkey.pem; 
+    include /etc/letsencrypt/options-ssl-nginx.conf; 
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; 
+
+    root /var/www/html;
+
+    server_name matrix.geekgone.dev; 
+
+    location / {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass http://localhost:8008;
+        proxy_read_timeout 90;
+    }
+
+}
