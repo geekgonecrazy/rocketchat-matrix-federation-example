@@ -4,8 +4,7 @@ server {
 
     if ($host = geekgone.dev) {
         return 301 https://$host$request_uri;
-    } 
-
+    }
 
     if ($host = chat.geekgone.dev) {
         return 301 https://$host$request_uri;
@@ -38,11 +37,9 @@ server {
         proxy_pass http://localhost:8008;
         proxy_read_timeout 90;
     }
-
 }
 
 server {
-
     listen 443 ssl; 
     ssl_certificate /etc/letsencrypt/live/geekgone.dev/fullchain.pem; 
     ssl_certificate_key /etc/letsencrypt/live/geekgone.dev/privkey.pem; 
@@ -61,11 +58,9 @@ server {
         proxy_pass http://localhost:3000;
         proxy_read_timeout 90;
     }
-
 }
 
 server {
-
     listen 443 ssl; 
     ssl_certificate /etc/letsencrypt/live/geekgone.dev/fullchain.pem; 
     ssl_certificate_key /etc/letsencrypt/live/geekgone.dev/privkey.pem; 
@@ -84,5 +79,4 @@ server {
         proxy_pass http://localhost:8008;
         proxy_read_timeout 90;
     }
-
 }
