@@ -1,6 +1,6 @@
 server {
-    listen 80 ;
-    listen [::]:80 ;
+    listen 80;
+    listen [::]:80;
 
     if ($host = geekgone.dev) {
         return 301 https://$host$request_uri;
