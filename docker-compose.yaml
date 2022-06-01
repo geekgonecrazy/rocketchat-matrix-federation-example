@@ -18,7 +18,7 @@ services:
 
   dendrite:
     hostname: monolith
-    image: matrixdotorg/dendrite-monolith:v0.8.4
+    image: matrixdotorg/dendrite-monolith:v0.8.7
     ports:
       - 8008:8008
       - 8448:8448
