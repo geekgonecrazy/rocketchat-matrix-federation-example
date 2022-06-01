@@ -34,7 +34,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   rocketchat:
-    image: registry.rocket.chat/rocketchat/rocket.chat:4.8.0-rc.1
+    image: registry.rocket.chat/rocketchat/rocket.chat:4.8.0
     command: >
       bash -c
         "for i in `seq 1 30`; do
